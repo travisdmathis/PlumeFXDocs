@@ -28,7 +28,7 @@ It does not include the paid Roblox model, runtime source package, internal laun
 1. Insert the `PlumeFX` model from the Roblox Creator Store.
 2. Move `PlumeFX.Plume` into `ReplicatedStorage`.
 3. Optional: move `PlumeFX.PlumeDemo` into `StarterPlayer > StarterPlayerScripts`.
-4. Keep, archive, or delete the remaining `PlumeFX` container. `ThumbnailCard` and `ThumbnailCamera` are only there for the Creator Store preview image.
+4. Keep, archive, or delete the empty `PlumeFX` container after moving the modules.
 5. Require `ReplicatedStorage.Plume` and register/spawn presets from your own scripts.
 
 ```lua
