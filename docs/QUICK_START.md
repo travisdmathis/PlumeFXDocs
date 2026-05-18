@@ -7,7 +7,8 @@ https://create.roblox.com/store/asset/93706653529943/PlumeFX-VFX-Toolkit-Effects
 1. Insert the `PlumeFX` model into your place.
 2. Move `PlumeFX.Plume` into `ReplicatedStorage`.
 3. Optional: move `PlumeFX.PlumeDemo` into `StarterPlayer > StarterPlayerScripts`.
-4. Press Play to test the demo panel.
+4. Keep, archive, or delete the remaining `PlumeFX` container. `ThumbnailCard` and `ThumbnailCamera` are only there for the Creator Store preview image.
+5. Press Play to test the demo panel.
 
 ```lua
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
