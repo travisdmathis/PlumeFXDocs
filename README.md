@@ -1,10 +1,12 @@
 # PlumeFX Documentation
 
-Public documentation for **PlumeFX VFX Toolkit & Effects Library**, a Roblox-native VFX toolkit with a chainable Luau authoring API, runtime manager, event triggers, attachment/socket spawning, mesh debris, procedural decals, flipbook particles, beams, trails, lights, part beams, and polished starter effects.
+Public documentation for **PlumeFX VFX Toolkit & Effects Library**, a Roblox-native VFX toolkit with a chainable Luau authoring API, runtime manager, event triggers, attachment/socket spawning, mesh debris, texture-first surface decals, optional procedural impact details, flipbook particles, beams, trails, lights, part beams, and polished starter effects.
 
 Get PlumeFX on the Roblox Creator Store:
 
 https://create.roblox.com/store/asset/93706653529943/PlumeFX-VFX-Toolkit-Effects-Library
+
+Current documented package version: `0.1.6`.
 
 ## Start Here
 
@@ -16,6 +18,7 @@ https://create.roblox.com/store/asset/93706653529943/PlumeFX-VFX-Toolkit-Effects
 - [Flipbook Textures](docs/FLIPBOOK_TEXTURES.md)
 - [Troubleshooting](docs/TROUBLESHOOTING.md)
 - [Release Notes](docs/RELEASE_NOTES.md)
+- [Changelog](CHANGELOG.md)
 
 ## What This Repo Contains
 

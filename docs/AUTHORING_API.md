@@ -39,4 +39,26 @@ Supported renderer methods:
 - `:renderDecal()`
 - `:renderLight()`
 
+`renderDecal()` is texture-first. By default it places the supplied texture on the target surface and does not add built-in scorch, ring, core, or crack artwork over it.
+
+```lua
+:renderDecal({
+	texture = "rbxassetid://00000000000000",
+	textureScale = 1,
+	textureTransparency = 0.08,
+	textureRotationJitter = { min = -12, max = 12 },
+})
+```
+
+Procedural decal details are opt-in:
+
+```lua
+:renderDecal({
+	texture = "rbxassetid://00000000000000",
+	procedural = true,
+	physical = true,
+	cracks = 6,
+})
+```
+
 Good effects are usually layered: flash, main particles, directional streaks, smoke/dust, debris, decals, and light.
