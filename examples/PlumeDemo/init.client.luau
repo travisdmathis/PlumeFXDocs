@@ -63,26 +63,39 @@ local manager = Plume.Manager.new({
 	globalIntensity = 1,
 })
 
+local function isDemoAssetRoot(candidate)
+	return candidate ~= nil
+		and (
+			candidate:FindFirstChild("MeteorModels") ~= nil
+			or candidate:FindFirstChild("TankBusterRockModels") ~= nil
+		)
+end
+
 local function demoAssetRoot()
-	local replicatedAssets = ReplicatedStorage:FindFirstChild("PlumeFXDemoAssets")
-		or ReplicatedStorage:FindFirstChild("RaidBrigadeAssets")
-	if replicatedAssets ~= nil then
-		return replicatedAssets
+	local candidates = {}
+	local function addCandidate(candidate)
+		if candidate ~= nil then
+			candidates[#candidates + 1] = candidate
+		end
 	end
 
-	local workspaceAssets = Workspace:FindFirstChild("PlumeFXDemoAssets")
-		or Workspace:FindFirstChild("RaidBrigadeAssets")
-	if workspaceAssets ~= nil then
-		return workspaceAssets
+	addCandidate(script:FindFirstChild("RaidBrigadeAssets"))
+	if script.Parent ~= nil then
+		addCandidate(script.Parent:FindFirstChild("RaidBrigadeAssets"))
+	end
+	addCandidate(ReplicatedStorage:FindFirstChild("PlumeFXDemoAssets"))
+	addCandidate(ReplicatedStorage:FindFirstChild("RaidBrigadeAssets"))
+	addCandidate(Workspace:FindFirstChild("PlumeFXDemoAssets"))
+	addCandidate(Workspace:FindFirstChild("RaidBrigadeAssets"))
+
+	for _, candidate in ipairs(candidates) do
+		if isDemoAssetRoot(candidate) then
+			warn("[PlumeFX Demo] Using demo asset root:", candidate:GetFullName())
+			return candidate
+		end
 	end
 
-	local child = script:FindFirstChild("RaidBrigadeAssets")
-	if child ~= nil then
-		return child
-	end
-
-	local parent = script.Parent
-	return parent and parent:FindFirstChild("RaidBrigadeAssets")
+	return nil
 end
 
 for id, factory in pairs(Plume.Presets.all()) do
@@ -817,24 +830,30 @@ local function spawnPreset(index)
 		return
 	end
 
-	if preset.id == "meteor-impact" and RaidBrigadeShowcase ~= nil then
-		RaidBrigadeShowcase.PlayMeteorImpact(manager, characterGroundCFrame(), {
-			intensity = preset.intensity,
-			parent = workspace,
-			priority = 4,
-			assetRoot = demoAssetRoot(),
-		})
-		return
+	if preset.id == "meteor-impact" then
+		if RaidBrigadeShowcase ~= nil then
+			RaidBrigadeShowcase.PlayMeteorImpact(manager, characterGroundCFrame(), {
+				intensity = preset.intensity,
+				parent = workspace,
+				priority = 4,
+				assetRoot = demoAssetRoot(),
+			})
+			return
+		end
+		warn("[PlumeFX Demo] RaidBrigadeShowcase unavailable; meteor uses generic preset.")
 	end
 
-	if preset.id == "ground-rupture" and RaidBrigadeShowcase ~= nil then
-		RaidBrigadeShowcase.PlayTankBuster(manager, characterGroundCFrame(), {
-			intensity = preset.intensity,
-			parent = workspace,
-			priority = 4,
-			assetRoot = demoAssetRoot(),
-		})
-		return
+	if preset.id == "ground-rupture" then
+		if RaidBrigadeShowcase ~= nil then
+			RaidBrigadeShowcase.PlayTankBuster(manager, characterGroundCFrame(), {
+				intensity = preset.intensity,
+				parent = workspace,
+				priority = 4,
+				assetRoot = demoAssetRoot(),
+			})
+			return
+		end
+		warn("[PlumeFX Demo] RaidBrigadeShowcase unavailable; ground rupture uses generic preset.")
 	end
 
 	manager:Trigger("demo-spawn", {

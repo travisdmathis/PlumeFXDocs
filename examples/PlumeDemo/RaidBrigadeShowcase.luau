@@ -104,19 +104,51 @@ local function getEffectsFolder(parent)
 	return folder
 end
 
+local function isDemoAssetRoot(candidate)
+	return candidate ~= nil
+		and (
+			candidate:FindFirstChild("MeteorModels") ~= nil
+			or candidate:FindFirstChild("TankBusterRockModels") ~= nil
+		)
+end
+
 local function getAssetRoot(assetRoot)
-	if assetRoot ~= nil then
+	if isDemoAssetRoot(assetRoot) then
 		return assetRoot
 	end
 
 	local plume = script:FindFirstAncestor("Plume")
 	local plumeParent = plume and plume.Parent
-	return ReplicatedStorage:FindFirstChild("PlumeFXDemoAssets")
-		or ReplicatedStorage:FindFirstChild("RaidBrigadeAssets")
-		or Workspace:FindFirstChild("PlumeFXDemoAssets")
-		or Workspace:FindFirstChild("RaidBrigadeAssets")
-		or (plumeParent and plumeParent:FindFirstChild("RaidBrigadeAssets"))
-		or (plume and plume:FindFirstChild("RaidBrigadeAssets"))
+	local candidates = {}
+	local function addCandidate(candidate)
+		if candidate ~= nil then
+			candidates[#candidates + 1] = candidate
+		end
+	end
+
+	addCandidate(script:FindFirstChild("RaidBrigadeAssets"))
+	if script.Parent ~= nil then
+		addCandidate(script.Parent:FindFirstChild("RaidBrigadeAssets"))
+	end
+	addCandidate(ReplicatedStorage:FindFirstChild("PlumeFXDemoAssets"))
+	addCandidate(ReplicatedStorage:FindFirstChild("RaidBrigadeAssets"))
+	addCandidate(Workspace:FindFirstChild("PlumeFXDemoAssets"))
+	addCandidate(Workspace:FindFirstChild("RaidBrigadeAssets"))
+	if plumeParent ~= nil then
+		addCandidate(plumeParent:FindFirstChild("RaidBrigadeAssets"))
+	end
+	if plume ~= nil then
+		addCandidate(plume:FindFirstChild("RaidBrigadeAssets"))
+	end
+
+	for _, candidate in ipairs(candidates) do
+		if isDemoAssetRoot(candidate) then
+			warnOnce("assetRoot", "Using demo asset root:", candidate:GetFullName())
+			return candidate
+		end
+	end
+
+	return nil
 end
 
 local function randomUnitVector(rng)
@@ -857,6 +889,8 @@ local function getUploadedMeteorTemplates(assetRoot)
 			"emptyMeteorModels",
 			"MeteorModels exists but contains no usable model templates."
 		)
+	else
+		warnOnce("usingMeteorModels", `Using {#templates} meteor model template(s).`)
 	end
 	return templates
 end
@@ -1375,6 +1409,8 @@ local function getTankBusterRockTemplates(assetRoot)
 			"emptyTankBusterRockModels",
 			"TankBusterRockModels exists but contains no usable model templates."
 		)
+	else
+		warnOnce("usingTankBusterRockModels", `Using {#templates} tank-buster rock model template(s).`)
 	end
 	return templates
 end
