@@ -4,7 +4,7 @@
 
 Make sure `Plume` is in `ReplicatedStorage`.
 
-If you want the in-game demo panel, move `PlumeDemo` into `StarterPlayer.StarterPlayerScripts`, then press Play.
+The Creator Store model is library-only and does not install an auto-running demo panel. To test effects in your own place, require `ReplicatedStorage.Plume`, register a preset, and call `manager:Spawn(...)` from a server or client script.
 
 ## Spawn Stops Working When Spamming
 

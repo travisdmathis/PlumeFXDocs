@@ -42,4 +42,4 @@ Optional demo-only showcase:
 - `Plume.Examples.RaidBrigadeShowcase.PlayMeteorImpact(...)`
 - `Plume.Examples.RaidBrigadeShowcase.PlayTankBuster(...)`
 
-The showcase is packaged with `PlumeDemo`, not the core `Plume` runtime, so production games can keep the install lean. The demo can use packaged `PlumeDemo.RaidBrigadeAssets` or Studio-imported override folders at `Workspace.PlumeFXDemoAssets`, `Workspace.RaidBrigadeAssets`, `ReplicatedStorage.PlumeFXDemoAssets`, or `ReplicatedStorage.RaidBrigadeAssets`.
+The showcase helpers are packaged under `Plume.Examples`. They do not install an auto-running demo script. If you want to use custom meteor or rock models, provide them from your own place through `Workspace.PlumeFXDemoAssets`, `Workspace.RaidBrigadeAssets`, `ReplicatedStorage.PlumeFXDemoAssets`, or `ReplicatedStorage.RaidBrigadeAssets`.

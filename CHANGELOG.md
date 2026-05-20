@@ -90,9 +90,7 @@ Documentation and buyer onboarding update for **PlumeFX VFX Toolkit & Combat Eff
 
 ### Added
 
-- Built-in Studio-visible buyer documentation under `ReplicatedStorage.Plume.Documentation`.
-- `Plume.Documentation.list()` and `Plume.Documentation.get(key)` helpers for browsing docs from code.
-- Quick Start, Authoring API, Customizing Presets, Events And Triggers, Flipbook Textures, Preset Catalog, and Troubleshooting pages inside the model asset.
+- Public buyer documentation for Quick Start, Authoring API, Customizing Presets, Events And Triggers, Flipbook Textures, Preset Catalog, and Troubleshooting.
 - `Plume.Examples.CustomBurstExample` as a copyable custom-effect starter pattern.
 - Store docs updated to make clear that PlumeFX includes the tools and docs needed to build custom VFX, not only starter presets.
 

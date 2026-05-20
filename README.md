@@ -17,11 +17,12 @@ Current documented package version: `0.2.0`.
 - [Events And Triggers](docs/EVENTS_AND_TRIGGERS.md)
 - [Flipbook Textures](docs/FLIPBOOK_TEXTURES.md)
 - [Troubleshooting](docs/TROUBLESHOOTING.md)
+- [Optional Demo](examples/README.md)
 - [Changelog](CHANGELOG.md)
 
 ## What This Repo Contains
 
-This repository contains public documentation and supporting flipbook preview images only.
+This repository contains public documentation, supporting flipbook preview images, and an optional demo script buyers can copy into Studio after installing PlumeFX.
 
 It does not include the paid Roblox model, runtime source package, internal launch notes, moderation notes, release zips, or build artifacts.
 
@@ -29,9 +30,10 @@ It does not include the paid Roblox model, runtime source package, internal laun
 
 1. Insert the `PlumeFX` model from the Roblox Creator Store.
 2. Move `PlumeFX.Plume` into `ReplicatedStorage`.
-3. Optional: move `PlumeFX.PlumeDemo` into `StarterPlayer > StarterPlayerScripts`.
-4. Keep, archive, or delete the empty `PlumeFX` container after moving the modules.
-5. Require `ReplicatedStorage.Plume` and register/spawn presets from your own scripts.
+3. Keep, archive, or delete the empty `PlumeFX` container after moving the module.
+4. Require `ReplicatedStorage.Plume` and register/spawn presets from your own scripts.
+
+Optional: copy `examples/PlumeDemo` into `StarterPlayer > StarterPlayerScripts` if you want the in-game test panel in a sandbox place. Do not add the demo script to production games unless you intentionally want that UI and camera behavior.
 
 ```lua
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
