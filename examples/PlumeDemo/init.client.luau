@@ -1,3 +1,4 @@
+local ContentProvider = game:GetService("ContentProvider")
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
@@ -97,6 +98,69 @@ local function demoAssetRoot()
 
 	return nil
 end
+
+local demoAssetPreloadRoot = nil
+local demoAssetPreloadStarted = false
+local demoAssetPreloadComplete = false
+
+local function preloadTargets(root)
+	local targets = {}
+	for _, descendant in ipairs(root:GetDescendants()) do
+		if
+			descendant:IsA("MeshPart")
+			or descendant:IsA("SurfaceAppearance")
+			or descendant:IsA("Decal")
+			or descendant:IsA("Texture")
+		then
+			targets[#targets + 1] = descendant
+		end
+	end
+
+	return targets
+end
+
+local function preloadDemoAssets(root)
+	if root == nil then
+		return
+	end
+
+	if demoAssetPreloadRoot ~= root then
+		demoAssetPreloadRoot = root
+		demoAssetPreloadStarted = false
+		demoAssetPreloadComplete = false
+	end
+
+	if demoAssetPreloadComplete then
+		return
+	end
+
+	if demoAssetPreloadStarted then
+		local startedAt = os.clock()
+		while not demoAssetPreloadComplete and os.clock() - startedAt < 5 do
+			task.wait()
+		end
+		return
+	end
+
+	demoAssetPreloadStarted = true
+	local targets = preloadTargets(root)
+	if #targets == 0 then
+		demoAssetPreloadComplete = true
+		return
+	end
+
+	local ok, err = pcall(function()
+		ContentProvider:PreloadAsync(targets)
+	end)
+	if not ok then
+		warn("[PlumeFX Demo] Demo mesh asset preload failed:", err)
+	end
+	demoAssetPreloadComplete = true
+end
+
+task.spawn(function()
+	preloadDemoAssets(demoAssetRoot())
+end)
 
 for id, factory in pairs(Plume.Presets.all()) do
 	manager:Register(id, factory)
@@ -251,6 +315,14 @@ local function characterGroundCFrame()
 	local position = base.Position
 	local groundPosition = Vector3.new(position.X, groundYAt(position), position.Z)
 	local direction = horizontalDirection(base.LookVector)
+	return CFrame.lookAt(groundPosition, groundPosition + direction)
+end
+
+local function aimedGroundCFrame()
+	local base = characterCFrame()
+	local position = base.Position
+	local groundPosition = Vector3.new(position.X, groundYAt(position), position.Z)
+	local direction = horizontalDirection(cameraAimDirection())
 	return CFrame.lookAt(groundPosition, groundPosition + direction)
 end
 
@@ -832,11 +904,13 @@ local function spawnPreset(index)
 
 	if preset.id == "meteor-impact" then
 		if RaidBrigadeShowcase ~= nil then
+			local assetRoot = demoAssetRoot()
+			preloadDemoAssets(assetRoot)
 			RaidBrigadeShowcase.PlayMeteorImpact(manager, characterGroundCFrame(), {
 				intensity = preset.intensity,
 				parent = workspace,
 				priority = 4,
-				assetRoot = demoAssetRoot(),
+				assetRoot = assetRoot,
 			})
 			return
 		end
@@ -845,11 +919,13 @@ local function spawnPreset(index)
 
 	if preset.id == "ground-rupture" then
 		if RaidBrigadeShowcase ~= nil then
-			RaidBrigadeShowcase.PlayTankBuster(manager, characterGroundCFrame(), {
+			local assetRoot = demoAssetRoot()
+			preloadDemoAssets(assetRoot)
+			RaidBrigadeShowcase.PlayTankBuster(manager, aimedGroundCFrame(), {
 				intensity = preset.intensity,
 				parent = workspace,
 				priority = 4,
-				assetRoot = demoAssetRoot(),
+				assetRoot = assetRoot,
 			})
 			return
 		end

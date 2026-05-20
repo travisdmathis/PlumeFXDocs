@@ -58,8 +58,8 @@ local GOLEM_TANK_BUSTER_LENGTH = 38
 local GOLEM_TANK_BUSTER_WIDTH = 14
 local GOLEM_TANK_BUSTER_STEP_DISTANCE = 3.4
 local GOLEM_TANK_BUSTER_SEGMENT_SECONDS = 0.068
-local GOLEM_TANK_BUSTER_ERUPTION_DELAY = 0.95
-local GOLEM_TANK_BUSTER_ROCK_LIFETIME = 2.35
+local GOLEM_TANK_BUSTER_ERUPTION_DELAY = 0.55
+local GOLEM_TANK_BUSTER_ROCK_LIFETIME = 3.35
 
 local meteorStrikeDecalRandom = Random.new()
 local meteorRockRandom = Random.new()
@@ -1440,8 +1440,8 @@ local function scaleTankBusterRockModel(model, rng, scale)
 	local _, size = model:GetBoundingBox()
 	local currentHeight = math.max(size.Y, 0.1)
 	local currentFootprint = math.max(size.X, size.Z, 0.1)
-	local targetHeight = rng:NextNumber(3.8, 6.4) * scale
-	local maxFootprint = rng:NextNumber(3.8, 5.8) * scale
+	local targetHeight = rng:NextNumber(5.2, 8.4) * scale
+	local maxFootprint = rng:NextNumber(5.0, 7.6) * scale
 	local scaleFactor = math.min(targetHeight / currentHeight, maxFootprint / currentFootprint)
 	scaleFactor = math.clamp(scaleFactor, 0.015, 4)
 
