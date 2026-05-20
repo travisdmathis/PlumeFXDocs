@@ -3,6 +3,8 @@
 PlumeFX supports Roblox-native event composition. This is not GPU particle death events like Three.js Plume; Roblox native particles do not expose per-particle death callbacks. Instead, PlumeFX gives developers the gameplay-friendly version:
 
 - Timeline events
+- Lifecycle events
+- Event-driven listener emitters
 - Sub-effect chains
 - Manual trigger hooks
 - Gameplay event routing
@@ -41,6 +43,83 @@ effect:On("impact", function(payload, instance)
 	print("Impact event fired", payload, instance)
 end)
 ```
+
+## Lifecycle Events
+
+PlumeFX emits Roblox-native lifecycle events that can drive listeners and sub-effects:
+
+- `onStart`
+- `onBurst`
+- `onEmitterStart`
+- `onEmitterEnd`
+- `onEffectEnd`
+
+Emitter lifecycle events include payload fields such as `emitter`, `renderer`, and `count` where applicable.
+
+```lua
+local effect = manager:Spawn("impact")
+
+effect:On("onBurst", function(payload)
+	print(payload.emitter, payload.count)
+end)
+```
+
+Namespaced emitter events are also fired as `{emitterName}.{eventName}`, such as `sparks.onBurst`, when the emitter has a name.
+
+## Spawn From Events
+
+Emitter definitions can listen to timeline, lifecycle, manual, or gameplay events and emit only when the event fires.
+
+```lua
+local meteor = Plume.system("MeteorImpact")
+	:duration(2.4)
+	:event(0.9, "impact")
+	:emitter("meteor_core", function(e)
+		return e
+			:duration(0.9)
+			:emitEvents()
+			:spawnRate(80)
+			:lifetime(0.35)
+			:position({
+				shape = { kind = "sphere", radius = 0.08 },
+				offset = Vector3.new(0, 8, -3),
+				moveTo = Vector3.new(0, 0.3, 0),
+				travelTime = 0.9,
+			})
+			:size(0.3)
+			:color(Color3.new(1, 0.45, 0.15), { alpha = 1 })
+			:renderSprite({ blending = "additive" })
+	end)
+	:emitter("impact_sparks", function(e)
+		return e
+			:spawnFromEvents({ event = "impact", count = 40 })
+			:lifetime({ min = 0.2, max = 0.5 })
+			:position({ shape = { kind = "sphere", radius = 0.2 } })
+			:velocity({ shape = { kind = "sphere" }, speed = { min = 8, max = 24 } })
+			:size(0.12)
+			:color(Color3.new(1, 0.7, 0.25), { alpha = 1 })
+			:renderSprite({ blending = "additive" })
+	end)
+	:build()
+```
+
+Shortcut form listens to another emitter's lifecycle event:
+
+```lua
+:spawnFromEvents("meteor_core", 12)
+```
+
+That defaults to `meteor_core.onBurst`. To listen to a different source lifecycle event:
+
+```lua
+:spawnFromEvents({
+	source = "meteor_core",
+	sourceEvent = "onEmitterEnd",
+	count = 20,
+})
+```
+
+This is Roblox-native event spawning. It is not Three.js Plume's GPU per-particle death event buffer, because Roblox does not expose particle death callbacks.
 
 ## Sub-Effect Chains
 
