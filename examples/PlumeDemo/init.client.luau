@@ -1,4 +1,3 @@
-local ContentProvider = game:GetService("ContentProvider")
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
@@ -98,93 +97,6 @@ local function demoAssetRoot()
 
 	return nil
 end
-
-local demoAssetPreloadRoot = nil
-local demoAssetPreloadStarted = false
-local demoAssetPreloadComplete = false
-
-local function preloadTargets(root)
-	local targets = {}
-
-	local function addContent(value)
-		if value == nil then
-			return
-		end
-
-		local text = tostring(value)
-		if text ~= "" then
-			targets[#targets + 1] = text
-		end
-	end
-
-	for _, descendant in ipairs(root:GetDescendants()) do
-		if
-			descendant:IsA("MeshPart")
-			or descendant:IsA("SurfaceAppearance")
-			or descendant:IsA("Decal")
-			or descendant:IsA("Texture")
-		then
-			targets[#targets + 1] = descendant
-		end
-
-		if descendant:IsA("MeshPart") then
-			addContent(descendant.MeshId)
-			addContent(descendant.TextureID)
-		elseif descendant:IsA("SurfaceAppearance") then
-			addContent(descendant.ColorMap)
-			addContent(descendant.NormalMap)
-			addContent(descendant.RoughnessMap)
-			addContent(descendant.MetalnessMap)
-		elseif descendant:IsA("Decal") or descendant:IsA("Texture") then
-			addContent(descendant.Texture)
-		end
-	end
-
-	return targets
-end
-
-local function preloadDemoAssets(root)
-	if root == nil then
-		return
-	end
-
-	if demoAssetPreloadRoot ~= root then
-		demoAssetPreloadRoot = root
-		demoAssetPreloadStarted = false
-		demoAssetPreloadComplete = false
-	end
-
-	if demoAssetPreloadComplete then
-		return
-	end
-
-	if demoAssetPreloadStarted then
-		local startedAt = os.clock()
-		while not demoAssetPreloadComplete and os.clock() - startedAt < 5 do
-			task.wait()
-		end
-		return
-	end
-
-	demoAssetPreloadStarted = true
-	local targets = preloadTargets(root)
-	if #targets == 0 then
-		demoAssetPreloadComplete = true
-		return
-	end
-
-	local ok, err = pcall(function()
-		ContentProvider:PreloadAsync(targets)
-	end)
-	if not ok then
-		warn("[PlumeFX Demo] Demo mesh asset preload failed:", err)
-	end
-	demoAssetPreloadComplete = true
-end
-
-task.spawn(function()
-	preloadDemoAssets(demoAssetRoot())
-end)
 
 for id, factory in pairs(Plume.Presets.all()) do
 	manager:Register(id, factory)
@@ -929,7 +841,6 @@ local function spawnPreset(index)
 	if preset.id == "meteor-impact" then
 		if RaidBrigadeShowcase ~= nil then
 			local assetRoot = demoAssetRoot()
-			preloadDemoAssets(assetRoot)
 			RaidBrigadeShowcase.PlayMeteorImpact(manager, characterGroundCFrame(), {
 				intensity = preset.intensity,
 				parent = workspace,
@@ -944,7 +855,6 @@ local function spawnPreset(index)
 	if preset.id == "ground-rupture" then
 		if RaidBrigadeShowcase ~= nil then
 			local assetRoot = demoAssetRoot()
-			preloadDemoAssets(assetRoot)
 			RaidBrigadeShowcase.PlayTankBuster(manager, aimedGroundCFrame(), {
 				intensity = preset.intensity,
 				parent = workspace,

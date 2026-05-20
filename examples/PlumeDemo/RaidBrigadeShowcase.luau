@@ -1384,144 +1384,6 @@ local function spawnMeteorCameraFacingBeam(impactCFrame, folder)
 	return model
 end
 
-local function getTankBusterRockTemplates(assetRoot)
-	assetRoot = getAssetRoot(assetRoot)
-	local templateFolder = assetRoot and assetRoot:FindFirstChild("TankBusterRockModels")
-	if templateFolder == nil then
-		warnOnce(
-			"missingTankBusterRockModels",
-			"Missing TankBusterRockModels under PlumeFXDemoAssets; using fallback rupture rocks."
-		)
-		return {}
-	end
-
-	local templates = {}
-	for _, child in ipairs(templateFolder:GetChildren()) do
-		if child:IsA("Model") and child:FindFirstChildWhichIsA("BasePart", true) then
-			table.insert(templates, child)
-		end
-	end
-	table.sort(templates, function(a, b)
-		return a.Name < b.Name
-	end)
-	if #templates == 0 then
-		warnOnce(
-			"emptyTankBusterRockModels",
-			"TankBusterRockModels exists but contains no usable model templates."
-		)
-	else
-		warnOnce("usingTankBusterRockModels", `Using {#templates} tank-buster rock model template(s).`)
-	end
-	return templates
-end
-
-local function prepareTankBusterRockModel(model)
-	local primary = model.PrimaryPart or model:FindFirstChildWhichIsA("BasePart", true)
-	if primary == nil then
-		model:Destroy()
-		return nil
-	end
-
-	model.PrimaryPart = primary
-	for _, descendant in ipairs(model:GetDescendants()) do
-		if descendant:IsA("BasePart") then
-			descendant.Anchored = true
-			descendant.CanCollide = false
-			descendant.CanTouch = false
-			descendant.CanQuery = false
-			descendant.CastShadow = true
-			descendant.Transparency = 0
-		end
-	end
-	return model
-end
-
-local function addTankBusterFallbackShards(model, rng, scale)
-	local _, modelSize = model:GetBoundingBox()
-	local height = math.max(5.8 * scale, modelSize.Y * 0.92)
-	local footprint = math.max(3.4 * scale, math.max(modelSize.X, modelSize.Z) * 0.42)
-	local shardCount = rng:NextInteger(2, 3)
-
-	for shardIndex = 1, shardCount do
-		local shard = Instance.new(if shardIndex == 1 then "WedgePart" else "Part")
-		shard.Name = "BasaltVisibleShard"
-		shard.Anchored = true
-		shard.CanCollide = false
-		shard.CanTouch = false
-		shard.CanQuery = false
-		shard.CastShadow = true
-		shard.Material = Enum.Material.Basalt
-		shard.Color = meteorRockColor(rng)
-		shard.Size = Vector3.new(
-			footprint * rng:NextNumber(0.42, 0.72),
-			height * rng:NextNumber(0.62, 0.98),
-			footprint * rng:NextNumber(0.26, 0.52)
-		)
-		shard.CFrame = CFrame.new(
-			rng:NextNumber(-footprint * 0.24, footprint * 0.24),
-			shard.Size.Y * 0.42,
-			rng:NextNumber(-footprint * 0.22, footprint * 0.22)
-		)
-			* CFrame.Angles(
-				rng:NextNumber(math.rad(-11), math.rad(14)),
-				rng:NextNumber(-math.pi, math.pi),
-				rng:NextNumber(math.rad(-10), math.rad(10))
-			)
-		shard.Parent = model
-	end
-end
-
-local function scaleTankBusterRockModel(model, rng, scale)
-	local _, size = model:GetBoundingBox()
-	local currentHeight = math.max(size.Y, 0.1)
-	local currentFootprint = math.max(size.X, size.Z, 0.1)
-	local targetHeight = rng:NextNumber(7.5, 11.5) * scale
-	local maxFootprint = rng:NextNumber(6.4, 9.8) * scale
-	local scaleFactor = math.min(targetHeight / currentHeight, maxFootprint / currentFootprint)
-	scaleFactor = math.clamp(scaleFactor, 0.015, 4)
-
-	local ok = pcall(function()
-		model:ScaleTo(math.max((model:GetScale() or 1) * scaleFactor, 0.01))
-	end)
-	if not ok then
-		for _, descendant in ipairs(model:GetDescendants()) do
-			if descendant:IsA("BasePart") then
-				descendant.Size *= scaleFactor
-			end
-		end
-	end
-end
-
-local function createPublishedTankBusterRockSegment(rng, index, scale, assetRoot)
-	if #RAID_BRIGADE_MESH_ASSETS.tankBusterRocks == 0 then
-		return nil
-	end
-	warnOnce("publishedTankBusterFallback", "Using published tank-buster mesh fallback.")
-
-	local config =
-		RAID_BRIGADE_MESH_ASSETS.tankBusterRocks[((index - 1) % #RAID_BRIGADE_MESH_ASSETS.tankBusterRocks) + 1]
-	local sourceModel = findAssetModel(
-		getAssetRoot(assetRoot),
-		"TankBusterRockModels",
-		if type(config) == "table" then config.sourceTemplate else nil
-	)
-	local model = createPublishedMeshModel(
-		config,
-		"MoltenTankBusterRockSegment",
-		sourceModel,
-		rng,
-		Enum.Material.Basalt,
-		meteorRockColor(rng)
-	)
-	if model == nil or not prepareTankBusterRockModel(model) then
-		return nil
-	end
-
-	scaleTankBusterRockModel(model, rng, scale)
-	addTankBusterFallbackShards(model, rng, scale)
-	return model
-end
-
 local function getGroundedTankBusterModelCFrame(model, desiredCFrame)
 	model:PivotTo(desiredCFrame)
 	local boundingCFrame, boundingSize = model:GetBoundingBox()
@@ -1529,69 +1391,71 @@ local function getGroundedTankBusterModelCFrame(model, desiredCFrame)
 	return desiredCFrame + Vector3.new(0, desiredCFrame.Position.Y - bottomY, 0), boundingSize
 end
 
-local function createTankBusterRockSegment(rng, segmentCFrame, index, scale, assetRoot)
-	local templates = getTankBusterRockTemplates(assetRoot)
-	if #templates > 0 then
-		local template = templates[((index - 1) % #templates) + 1]
-		local model = prepareTankBusterRockModel(template:Clone())
-		if model then
-			model.Name = "MoltenTankBusterRockSegment"
-			scaleTankBusterRockModel(model, rng, scale)
-			addTankBusterFallbackShards(model, rng, scale)
-			return model
-		end
-	end
-
-	local publishedModel = createPublishedTankBusterRockSegment(rng, index, scale, assetRoot)
-	if publishedModel ~= nil then
-		return publishedModel
-	end
-
+local function createTankBusterRockSegment(rng, segmentCFrame, index, scale, _assetRoot)
 	local model = Instance.new("Model")
 	model.Name = "MoltenTankBusterRockSegment"
-	local height = rng:NextNumber(3.2, 6.4) * scale
-	local width = rng:NextNumber(2.8, 4.8) * scale
-	local depth = rng:NextNumber(1.6, 2.8) * scale
-	local localRotation = CFrame.Angles(
-		rng:NextNumber(math.rad(-8), math.rad(8)),
-		rng:NextNumber(math.rad(-22), math.rad(22)),
-		rng:NextNumber(math.rad(-10), math.rad(10))
-	)
+	local height = rng:NextNumber(7.2, 11.8) * scale
+	local width = rng:NextNumber(4.8, 7.8) * scale
+	local depth = rng:NextNumber(2.8, 4.8) * scale
+	local shardCount = rng:NextInteger(2, 4)
+	local primary = nil
 
-	local core = makeMeteorPart(
-		model,
-		segmentCFrame,
-		if index % 3 == 0 then "WedgePart" else "Block",
-		"BasaltShard",
-		Vector3.new(width, height, depth),
-		CFrame.new(0, height * 0.48, 0) * localRotation,
-		meteorRockColor(rng),
-		Enum.Material.Basalt,
-		true
-	)
-	model.PrimaryPart = core
+	for shardIndex = 1, shardCount do
+		local shardHeight = height * rng:NextNumber(0.56, 1.02)
+		local shardWidth = width * rng:NextNumber(0.42, 0.8)
+		local shardDepth = depth * rng:NextNumber(0.45, 0.9)
+		local localRotation = CFrame.Angles(
+			rng:NextNumber(math.rad(-12), math.rad(15)),
+			rng:NextNumber(-math.pi, math.pi),
+			rng:NextNumber(math.rad(-12), math.rad(12))
+		)
 
-	local glow = makeMeteorPart(
-		model,
-		segmentCFrame,
-		"Block",
-		"MoltenCrackGlow",
-		Vector3.new(width * 0.74, rng:NextNumber(0.08, 0.18), depth * 1.08),
-		CFrame.new(rng:NextNumber(-0.25, 0.25), height * rng:NextNumber(0.4, 0.72), -depth * 0.48)
-			* CFrame.Angles(0, 0, rng:NextNumber(-0.25, 0.25)),
-		Color3.fromRGB(255, rng:NextInteger(70, 138), 14),
-		Enum.Material.Neon,
-		false
-	)
-	glow.Transparency = 0.04
+		local shard = makeMeteorPart(
+			model,
+			segmentCFrame,
+			if (index + shardIndex) % 3 == 0 then "WedgePart" else "Block",
+			if shardIndex == 1 then "BasaltShard" else "BasaltShard" .. shardIndex,
+			Vector3.new(shardWidth, shardHeight, shardDepth),
+			CFrame.new(
+				rng:NextNumber(-width * 0.25, width * 0.25),
+				shardHeight * 0.46,
+				rng:NextNumber(-depth * 0.3, depth * 0.3)
+			) * localRotation,
+			meteorRockColor(rng),
+			Enum.Material.Basalt,
+			true
+		)
+		primary = primary or shard
+	end
+
+	model.PrimaryPart = primary
+
+	if index % 2 == 0 then
+		local glow = makeMeteorPart(
+			model,
+			segmentCFrame,
+			"Block",
+			"MoltenCrackGlow",
+			Vector3.new(width * 0.82, rng:NextNumber(0.08, 0.16), depth * 0.9),
+			CFrame.new(
+				rng:NextNumber(-width * 0.12, width * 0.12),
+				height * rng:NextNumber(0.38, 0.7),
+				-depth * 0.42
+			) * CFrame.Angles(0, rng:NextNumber(-0.22, 0.22), rng:NextNumber(-0.18, 0.18)),
+			Color3.fromRGB(255, rng:NextInteger(70, 138), 14),
+			Enum.Material.Neon,
+			false
+		)
+		glow.Transparency = 0.08
+	end
 
 	local light = Instance.new("PointLight")
 	light.Name = "TankBusterRockGlow"
 	light.Color = Color3.fromRGB(255, 93, 24)
-	light.Brightness = rng:NextNumber(0.7, 1.4)
-	light.Range = rng:NextNumber(7, 12)
+	light.Brightness = rng:NextNumber(0.55, 1.1)
+	light.Range = rng:NextNumber(8, 14)
 	light.Shadows = false
-	light.Parent = core
+	light.Parent = primary
 
 	return model
 end
