@@ -3,7 +3,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
 local Workspace = game:GetService("Workspace")
 
-local Builder = require(script.Parent.Parent.Builder)
+local Builder = require(ReplicatedStorage:WaitForChild("Plume"):WaitForChild("Builder"))
 
 local RaidBrigadeShowcase = {}
 
