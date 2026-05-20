@@ -6,7 +6,7 @@ local UserInputService = game:GetService("UserInputService")
 local Workspace = game:GetService("Workspace")
 
 local Plume = require(ReplicatedStorage:WaitForChild("Plume"))
-local RaidBrigadeShowcase = Plume.Examples.RaidBrigadeShowcase
+local RaidBrigadeShowcase = require(script:WaitForChild("RaidBrigadeShowcase"))
 
 local player = Players.LocalPlayer
 local playerGui = player:WaitForChild("PlayerGui")

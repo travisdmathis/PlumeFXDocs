@@ -17,4 +17,4 @@ To use it:
 
 The demo registers the included presets, shows a scrollable button panel, supports number-key shortcuts, and includes the first-person shooting test for muzzle flash, projectile travel, bullet impacts, decals, sparks, smoke, and mesh debris.
 
-The bundled `RaidBrigadeAssets.rbxm` file is only for the optional Meteor Impact and Ground Rupture showcase buttons. You do not need it in production games.
+`RaidBrigadeShowcase.luau` and the bundled `RaidBrigadeAssets.rbxm` file are only for the optional Meteor Impact and Ground Rupture showcase buttons. They are not part of the Creator Store library package, and you do not need them in production games.

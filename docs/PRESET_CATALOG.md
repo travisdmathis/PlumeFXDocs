@@ -39,7 +39,8 @@ Included flipbook examples:
 
 Optional demo-only showcase:
 
-- `Plume.Examples.RaidBrigadeShowcase.PlayMeteorImpact(...)`
-- `Plume.Examples.RaidBrigadeShowcase.PlayTankBuster(...)`
+- `examples/PlumeDemo/RaidBrigadeShowcase.luau`
+- `RaidBrigadeShowcase.PlayMeteorImpact(...)`
+- `RaidBrigadeShowcase.PlayTankBuster(...)`
 
-The showcase helpers are packaged under `Plume.Examples`. They do not install an auto-running demo script. If you want to use custom meteor or rock models, provide them from your own place through `Workspace.PlumeFXDemoAssets`, `Workspace.RaidBrigadeAssets`, `ReplicatedStorage.PlumeFXDemoAssets`, or `ReplicatedStorage.RaidBrigadeAssets`.
+The Raid Brigade showcase helpers are not part of the Creator Store library package. They live only in the optional docs repo demo so the paid model stays free of demo-specific asset dependencies. If you want to use custom meteor or rock models in your own sandbox, provide them through `Workspace.PlumeFXDemoAssets`, `Workspace.RaidBrigadeAssets`, `ReplicatedStorage.PlumeFXDemoAssets`, or `ReplicatedStorage.RaidBrigadeAssets`.

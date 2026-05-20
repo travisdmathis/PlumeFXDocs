@@ -16,6 +16,8 @@ Authoring and production toolkit update for **PlumeFX VFX Toolkit & Effects Libr
 ### Changed
 
 - `emitEvents()` is now treated as a Roblox-native lifecycle-event authoring hook instead of an unsupported API marker.
+- The Creator Store model is library-only: no auto-running demo script, no demo model bundle, and no Raid Brigade-specific asset dependencies are baked into `Plume`.
+- Built-in uploaded flipbook texture ids are left unset by default. Developers can paste their own owned image ids into `Plume.Presets.Textures.flipbooks`.
 
 ## v0.1.6
 
