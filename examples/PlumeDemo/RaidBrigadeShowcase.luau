@@ -100,10 +100,10 @@ local function getAssetRoot(assetRoot)
 
 	local plume = script:FindFirstAncestor("Plume")
 	local plumeParent = plume and plume.Parent
-	return Workspace:FindFirstChild("PlumeFXDemoAssets")
-		or Workspace:FindFirstChild("RaidBrigadeAssets")
-		or ReplicatedStorage:FindFirstChild("PlumeFXDemoAssets")
+	return ReplicatedStorage:FindFirstChild("PlumeFXDemoAssets")
 		or ReplicatedStorage:FindFirstChild("RaidBrigadeAssets")
+		or Workspace:FindFirstChild("PlumeFXDemoAssets")
+		or Workspace:FindFirstChild("RaidBrigadeAssets")
 		or (plumeParent and plumeParent:FindFirstChild("RaidBrigadeAssets"))
 		or (plume and plume:FindFirstChild("RaidBrigadeAssets"))
 end
@@ -196,7 +196,7 @@ local function createPublishedMeshModel(config, name, sourceModel, rng, material
 	local model = Instance.new("Model")
 	model.Name = name
 
-	local part = Instance.new("Part")
+	local part = Instance.new("MeshPart")
 	part.Name = if type(config) == "table" and config.partName then config.partName else "Mesh"
 	part.Anchored = true
 	part.CanCollide = false
@@ -208,29 +208,18 @@ local function createPublishedMeshModel(config, name, sourceModel, rng, material
 	part.Size = if type(config) == "table" and typeof(config.size) == "Vector3"
 		then config.size
 		else Vector3.new(4, 4, 4)
-
-	local mesh = Instance.new("SpecialMesh")
-	mesh.Name = "PublishedMesh"
-	mesh.MeshType = Enum.MeshType.FileMesh
-	mesh.MeshId = meshId
-	local meshScale = 1
-	local fallbackMaxSize = if type(config) == "table"
-			and type(config.fallbackMaxSize) == "number"
-		then config.fallbackMaxSize
-		else 4
 	if sourceModel ~= nil then
 		local _, sourceSize = sourceModel:GetBoundingBox()
-		local sourceMaxSize = math.max(sourceSize.X, sourceSize.Y, sourceSize.Z)
-		if sourceMaxSize > 0.01 then
-			meshScale = math.clamp(fallbackMaxSize / sourceMaxSize, 0.01, 1)
+		if math.max(sourceSize.X, sourceSize.Y, sourceSize.Z) > 0.01 then
+			part.Size = sourceSize
 		end
 	end
-	mesh.Scale = Vector3.new(meshScale, meshScale, meshScale)
+	part.MeshId = meshId
+
 	local textureId = normalizeAssetId(if type(config) == "table" then config.textureId else nil)
 	if textureId ~= nil then
-		mesh.TextureId = textureId
+		part.TextureID = textureId
 	end
-	mesh.Parent = part
 
 	part.Parent = model
 	model.PrimaryPart = part

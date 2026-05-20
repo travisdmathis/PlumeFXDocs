@@ -5,8 +5,27 @@ local TweenService = game:GetService("TweenService")
 local UserInputService = game:GetService("UserInputService")
 local Workspace = game:GetService("Workspace")
 
+warn("[PlumeFX Demo] LocalScript starting:", script:GetFullName())
+
 local Plume = require(ReplicatedStorage:WaitForChild("Plume"))
-local RaidBrigadeShowcase = require(script:WaitForChild("RaidBrigadeShowcase"))
+
+local function loadRaidBrigadeShowcase()
+	local module = script:WaitForChild("RaidBrigadeShowcase", 5)
+	if module == nil then
+		warn("[PlumeFX Demo] RaidBrigadeShowcase was not found; demo will use generic presets.")
+		return nil
+	end
+
+	local ok, showcase = pcall(require, module)
+	if not ok then
+		warn("[PlumeFX Demo] RaidBrigadeShowcase failed to load:", showcase)
+		return nil
+	end
+
+	return showcase
+end
+
+local RaidBrigadeShowcase = loadRaidBrigadeShowcase()
 
 local player = Players.LocalPlayer
 local playerGui = player:WaitForChild("PlayerGui")
@@ -19,16 +38,16 @@ local manager = Plume.Manager.new({
 })
 
 local function demoAssetRoot()
-	local workspaceAssets = Workspace:FindFirstChild("PlumeFXDemoAssets")
-		or Workspace:FindFirstChild("RaidBrigadeAssets")
-	if workspaceAssets ~= nil then
-		return workspaceAssets
-	end
-
 	local replicatedAssets = ReplicatedStorage:FindFirstChild("PlumeFXDemoAssets")
 		or ReplicatedStorage:FindFirstChild("RaidBrigadeAssets")
 	if replicatedAssets ~= nil then
 		return replicatedAssets
+	end
+
+	local workspaceAssets = Workspace:FindFirstChild("PlumeFXDemoAssets")
+		or Workspace:FindFirstChild("RaidBrigadeAssets")
+	if workspaceAssets ~= nil then
+		return workspaceAssets
 	end
 
 	local child = script:FindFirstChild("RaidBrigadeAssets")
@@ -43,7 +62,10 @@ end
 for id, factory in pairs(Plume.Presets.all()) do
 	manager:Register(id, factory)
 end
-RaidBrigadeShowcase.Register(manager)
+
+if RaidBrigadeShowcase ~= nil then
+	RaidBrigadeShowcase.Register(manager)
+end
 
 manager:RegisterEvent("demo-spawn", function(activeManager, payload)
 	payload.priority = payload.priority or 1
@@ -769,7 +791,7 @@ local function spawnPreset(index)
 		return
 	end
 
-	if preset.id == "meteor-impact" then
+	if preset.id == "meteor-impact" and RaidBrigadeShowcase ~= nil then
 		RaidBrigadeShowcase.PlayMeteorImpact(manager, characterGroundCFrame(), {
 			intensity = preset.intensity,
 			parent = workspace,
@@ -779,7 +801,7 @@ local function spawnPreset(index)
 		return
 	end
 
-	if preset.id == "ground-rupture" then
+	if preset.id == "ground-rupture" and RaidBrigadeShowcase ~= nil then
 		RaidBrigadeShowcase.PlayTankBuster(manager, characterGroundCFrame(), {
 			intensity = preset.intensity,
 			parent = workspace,
@@ -938,9 +960,16 @@ local function createDemoUi()
 	clearButton.BackgroundColor3 = Color3.fromRGB(77, 42, 48)
 end
 
-placeImpactWall(true)
-createDemoUi()
-task.delay(0.75, spawnNext)
+local started, startupError = xpcall(function()
+	placeImpactWall(true)
+	createDemoUi()
+	warn("[PlumeFX Demo] UI created in:", playerGui:GetFullName())
+	task.delay(0.75, spawnNext)
+end, debug.traceback)
+
+if not started then
+	warn("[PlumeFX Demo] startup failed:", startupError)
+end
 
 player.CharacterAdded:Connect(function()
 	task.delay(0.5, function()
