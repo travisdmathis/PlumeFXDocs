@@ -52,18 +52,29 @@ local RAID_BRIGADE_MESH_ASSETS = {
 local RAID_BRIGADE_METEOR_FALL_HEIGHT = 76
 local RAID_BRIGADE_METEOR_FALL_SECONDS = 2.15
 local METEOR_UPLOADED_MODEL_CHANCE = 1
-local METEOR_MODEL_TARGET_MIN_SIZE = 0.3
-local METEOR_MODEL_TARGET_MAX_SIZE = 0.48
+local METEOR_MODEL_TARGET_MIN_SIZE = 5.5
+local METEOR_MODEL_TARGET_MAX_SIZE = 7.25
 local GOLEM_TANK_BUSTER_LENGTH = 38
 local GOLEM_TANK_BUSTER_WIDTH = 14
 local GOLEM_TANK_BUSTER_STEP_DISTANCE = 3.4
 local GOLEM_TANK_BUSTER_SEGMENT_SECONDS = 0.068
-local GOLEM_TANK_BUSTER_ROCK_LIFETIME = 1.35
+local GOLEM_TANK_BUSTER_ERUPTION_DELAY = 0.95
+local GOLEM_TANK_BUSTER_ROCK_LIFETIME = 2.35
 
 local meteorStrikeDecalRandom = Random.new()
 local meteorRockRandom = Random.new()
 local tankBusterRockRandom = Random.new()
 local registeredManagers = setmetatable({}, { __mode = "k" })
+local warned = {}
+
+local function warnOnce(key, ...)
+	if warned[key] == true then
+		return
+	end
+
+	warned[key] = true
+	warn("[PlumeFX Demo]", ...)
+end
 
 local function flipbook4x4(framerate)
 	return {
@@ -828,6 +839,10 @@ local function getUploadedMeteorTemplates(assetRoot)
 	assetRoot = getAssetRoot(assetRoot)
 	local meteorFolder = assetRoot and assetRoot:FindFirstChild("MeteorModels")
 	if meteorFolder == nil then
+		warnOnce(
+			"missingMeteorModels",
+			"Missing MeteorModels under PlumeFXDemoAssets; using fallback meteor model."
+		)
 		return {}
 	end
 
@@ -836,6 +851,12 @@ local function getUploadedMeteorTemplates(assetRoot)
 		if child:IsA("Model") and child:FindFirstChildWhichIsA("BasePart", true) then
 			table.insert(templates, child)
 		end
+	end
+	if #templates == 0 then
+		warnOnce(
+			"emptyMeteorModels",
+			"MeteorModels exists but contains no usable model templates."
+		)
 	end
 	return templates
 end
@@ -854,6 +875,7 @@ local function spawnPublishedMeteorRockModel(
 	if #RAID_BRIGADE_MESH_ASSETS.meteors == 0 then
 		return nil
 	end
+	warnOnce("publishedMeteorFallback", "Using published meteor mesh fallback.")
 
 	local config =
 		RAID_BRIGADE_MESH_ASSETS.meteors[rng:NextInteger(1, #RAID_BRIGADE_MESH_ASSETS.meteors)]
@@ -1332,6 +1354,10 @@ local function getTankBusterRockTemplates(assetRoot)
 	assetRoot = getAssetRoot(assetRoot)
 	local templateFolder = assetRoot and assetRoot:FindFirstChild("TankBusterRockModels")
 	if templateFolder == nil then
+		warnOnce(
+			"missingTankBusterRockModels",
+			"Missing TankBusterRockModels under PlumeFXDemoAssets; using fallback rupture rocks."
+		)
 		return {}
 	end
 
@@ -1344,6 +1370,12 @@ local function getTankBusterRockTemplates(assetRoot)
 	table.sort(templates, function(a, b)
 		return a.Name < b.Name
 	end)
+	if #templates == 0 then
+		warnOnce(
+			"emptyTankBusterRockModels",
+			"TankBusterRockModels exists but contains no usable model templates."
+		)
+	end
 	return templates
 end
 
@@ -1393,6 +1425,7 @@ local function createPublishedTankBusterRockSegment(rng, index, scale, assetRoot
 	if #RAID_BRIGADE_MESH_ASSETS.tankBusterRocks == 0 then
 		return nil
 	end
+	warnOnce("publishedTankBusterFallback", "Using published tank-buster mesh fallback.")
 
 	local config =
 		RAID_BRIGADE_MESH_ASSETS.tankBusterRocks[((index - 1) % #RAID_BRIGADE_MESH_ASSETS.tankBusterRocks) + 1]
@@ -1605,7 +1638,7 @@ function RaidBrigadeShowcase.PlayTankBuster(manager, lineCFrame, options)
 	right = if right.Magnitude < 0.001 then Vector3.xAxis else right.Unit
 	local startPosition = lineCFrame.Position
 
-	task.delay(3, function()
+	task.delay(GOLEM_TANK_BUSTER_ERUPTION_DELAY, function()
 		for index = 1, segmentCount do
 			task.delay((index - 1) * GOLEM_TANK_BUSTER_SEGMENT_SECONDS, function()
 				local distance = index * GOLEM_TANK_BUSTER_STEP_DISTANCE

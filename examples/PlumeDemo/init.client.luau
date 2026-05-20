@@ -9,6 +9,32 @@ warn("[PlumeFX Demo] LocalScript starting:", script:GetFullName())
 
 local Plume = require(ReplicatedStorage:WaitForChild("Plume"))
 
+local function applyDemoTextureIds()
+	local module = script:FindFirstChild("DemoTextureIds")
+	if module == nil then
+		warn("[PlumeFX Demo] DemoTextureIds was not found; flipbook examples will use fallback textures.")
+		return
+	end
+
+	local ok, textureIds = pcall(require, module)
+	if not ok then
+		warn("[PlumeFX Demo] DemoTextureIds failed to load:", textureIds)
+		return
+	end
+
+	local flipbooks = textureIds.flipbooks
+	if type(flipbooks) ~= "table" then
+		return
+	end
+
+	Plume.Presets.Textures.flipbooks = Plume.Presets.Textures.flipbooks or {}
+	for key, value in pairs(flipbooks) do
+		Plume.Presets.Textures.flipbooks[key] = value
+	end
+end
+
+applyDemoTextureIds()
+
 local function loadRaidBrigadeShowcase()
 	local module = script:WaitForChild("RaidBrigadeShowcase", 5)
 	if module == nil then
