@@ -105,6 +105,18 @@ local demoAssetPreloadComplete = false
 
 local function preloadTargets(root)
 	local targets = {}
+
+	local function addContent(value)
+		if value == nil then
+			return
+		end
+
+		local text = tostring(value)
+		if text ~= "" then
+			targets[#targets + 1] = text
+		end
+	end
+
 	for _, descendant in ipairs(root:GetDescendants()) do
 		if
 			descendant:IsA("MeshPart")
@@ -113,6 +125,18 @@ local function preloadTargets(root)
 			or descendant:IsA("Texture")
 		then
 			targets[#targets + 1] = descendant
+		end
+
+		if descendant:IsA("MeshPart") then
+			addContent(descendant.MeshId)
+			addContent(descendant.TextureID)
+		elseif descendant:IsA("SurfaceAppearance") then
+			addContent(descendant.ColorMap)
+			addContent(descendant.NormalMap)
+			addContent(descendant.RoughnessMap)
+			addContent(descendant.MetalnessMap)
+		elseif descendant:IsA("Decal") or descendant:IsA("Texture") then
+			addContent(descendant.Texture)
 		end
 	end
 

@@ -59,7 +59,7 @@ local GOLEM_TANK_BUSTER_WIDTH = 14
 local GOLEM_TANK_BUSTER_STEP_DISTANCE = 3.4
 local GOLEM_TANK_BUSTER_SEGMENT_SECONDS = 0.068
 local GOLEM_TANK_BUSTER_ERUPTION_DELAY = 0.55
-local GOLEM_TANK_BUSTER_ROCK_LIFETIME = 3.35
+local GOLEM_TANK_BUSTER_ROCK_LIFETIME = 4.6
 
 local meteorStrikeDecalRandom = Random.new()
 local meteorRockRandom = Random.new()
@@ -1436,12 +1436,47 @@ local function prepareTankBusterRockModel(model)
 	return model
 end
 
+local function addTankBusterFallbackShards(model, rng, scale)
+	local _, modelSize = model:GetBoundingBox()
+	local height = math.max(5.8 * scale, modelSize.Y * 0.92)
+	local footprint = math.max(3.4 * scale, math.max(modelSize.X, modelSize.Z) * 0.42)
+	local shardCount = rng:NextInteger(2, 3)
+
+	for shardIndex = 1, shardCount do
+		local shard = Instance.new(if shardIndex == 1 then "WedgePart" else "Part")
+		shard.Name = "BasaltVisibleShard"
+		shard.Anchored = true
+		shard.CanCollide = false
+		shard.CanTouch = false
+		shard.CanQuery = false
+		shard.CastShadow = true
+		shard.Material = Enum.Material.Basalt
+		shard.Color = meteorRockColor(rng)
+		shard.Size = Vector3.new(
+			footprint * rng:NextNumber(0.42, 0.72),
+			height * rng:NextNumber(0.62, 0.98),
+			footprint * rng:NextNumber(0.26, 0.52)
+		)
+		shard.CFrame = CFrame.new(
+			rng:NextNumber(-footprint * 0.24, footprint * 0.24),
+			shard.Size.Y * 0.42,
+			rng:NextNumber(-footprint * 0.22, footprint * 0.22)
+		)
+			* CFrame.Angles(
+				rng:NextNumber(math.rad(-11), math.rad(14)),
+				rng:NextNumber(-math.pi, math.pi),
+				rng:NextNumber(math.rad(-10), math.rad(10))
+			)
+		shard.Parent = model
+	end
+end
+
 local function scaleTankBusterRockModel(model, rng, scale)
 	local _, size = model:GetBoundingBox()
 	local currentHeight = math.max(size.Y, 0.1)
 	local currentFootprint = math.max(size.X, size.Z, 0.1)
-	local targetHeight = rng:NextNumber(5.2, 8.4) * scale
-	local maxFootprint = rng:NextNumber(5.0, 7.6) * scale
+	local targetHeight = rng:NextNumber(7.5, 11.5) * scale
+	local maxFootprint = rng:NextNumber(6.4, 9.8) * scale
 	local scaleFactor = math.min(targetHeight / currentHeight, maxFootprint / currentFootprint)
 	scaleFactor = math.clamp(scaleFactor, 0.015, 4)
 
@@ -1483,6 +1518,7 @@ local function createPublishedTankBusterRockSegment(rng, index, scale, assetRoot
 	end
 
 	scaleTankBusterRockModel(model, rng, scale)
+	addTankBusterFallbackShards(model, rng, scale)
 	return model
 end
 
@@ -1501,6 +1537,7 @@ local function createTankBusterRockSegment(rng, segmentCFrame, index, scale, ass
 		if model then
 			model.Name = "MoltenTankBusterRockSegment"
 			scaleTankBusterRockModel(model, rng, scale)
+			addTankBusterFallbackShards(model, rng, scale)
 			return model
 		end
 	end
@@ -1575,7 +1612,7 @@ local function popTankBusterRockSegment(manager, folder, rng, segmentCFrame, ind
 		})
 	end
 
-	local riseSeconds = 0.14
+	local riseSeconds = 0.24
 	local holdSeconds = GOLEM_TANK_BUSTER_ROCK_LIFETIME
 	local startedAt = os.clock()
 	local connection
