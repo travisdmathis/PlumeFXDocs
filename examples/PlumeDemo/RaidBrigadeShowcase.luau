@@ -1394,9 +1394,9 @@ end
 local function createTankBusterRockSegment(rng, segmentCFrame, index, scale, _assetRoot)
 	local model = Instance.new("Model")
 	model.Name = "MoltenTankBusterRockSegment"
-	local height = rng:NextNumber(7.2, 11.8) * scale
-	local width = rng:NextNumber(4.8, 7.8) * scale
-	local depth = rng:NextNumber(2.8, 4.8) * scale
+	local height = rng:NextNumber(4.6, 7.4) * scale
+	local width = rng:NextNumber(3.1, 5.0) * scale
+	local depth = rng:NextNumber(1.8, 3.1) * scale
 	local shardCount = rng:NextInteger(2, 4)
 	local primary = nil
 
