@@ -9,10 +9,16 @@ warn("[PlumeFX Demo] LocalScript starting:", script:GetFullName())
 
 local Plume = require(ReplicatedStorage:WaitForChild("Plume"))
 
+local CANDLE_FLAME_TEXTURE = "rbxassetid://100169118546440"
+local MAGIC_VENT_AURA_TEXTURE = "rbxassetid://111715885030423"
+local MAGIC_VENT_SMOKE_TEXTURE = "rbxassetid://91298815224586"
+
 local function applyDemoTextureIds()
 	local module = script:FindFirstChild("DemoTextureIds")
 	if module == nil then
-		warn("[PlumeFX Demo] DemoTextureIds was not found; flipbook examples will use fallback textures.")
+		warn(
+			"[PlumeFX Demo] DemoTextureIds was not found; flipbook examples will use fallback textures."
+		)
 		return
 	end
 
@@ -106,6 +112,94 @@ if RaidBrigadeShowcase ~= nil then
 	RaidBrigadeShowcase.Register(manager)
 end
 
+Plume.Environment.registerFlame(manager, "environment-candle-flame", {
+	texture = CANDLE_FLAME_TEXTURE,
+	name = "PlumeFXDemoCandleFlame",
+	scale = 1.25,
+	flipbookFramerate = { min = 3, max = 4.5 },
+	timeScale = 0.55,
+})
+
+Plume.Environment.registerEffect(manager, "environment-magic-vent", {
+	name = "PlumeFXDemoMagicVent",
+	flickerGroup = "magic-vent",
+	layers = {
+		{
+			name = "vent-aura-swirl",
+			texture = MAGIC_VENT_AURA_TEXTURE,
+			rate = 2.4,
+			lifetime = { min = 2.5, max = 3.4 },
+			size = { min = 0.85, max = 1.18 },
+			color = Color3.fromRGB(92, 190, 255),
+			alpha = 1,
+			lightEmission = 0.82,
+			brightness = 1,
+			lockedToPart = true,
+			flipbook = {
+				layout = "Grid4x4",
+				mode = "Loop",
+				startRandom = false,
+				blendFrames = true,
+				framerate = { min = 7, max = 10 },
+				timeScale = 0.72,
+			},
+			alphaOverLife = {
+				{ 0, 0 },
+				{ 0.22, 0.46 },
+				{ 0.72, 0.32 },
+				{ 1, 0 },
+			},
+			flicker = {
+				rateWeight = 0.08,
+				brightnessWeight = 0.08,
+			},
+		},
+		{
+			name = "vent-soft-mist",
+			texture = MAGIC_VENT_SMOKE_TEXTURE,
+			rate = 1.6,
+			lifetime = { min = 2.8, max = 4.2 },
+			size = { min = 1.1, max = 1.8 },
+			color = Color3.fromRGB(120, 210, 255),
+			alpha = 1,
+			gravity = Vector3.new(0, 0.24, 0),
+			drag = 4,
+			velocity = {
+				shape = { kind = "cone", angle = math.rad(9) },
+				speed = { min = 0.04, max = 0.16 },
+			},
+			flipbook = {
+				layout = "Grid4x4",
+				mode = "Loop",
+				startRandom = true,
+				blendFrames = true,
+				framerate = { min = 5, max = 8 },
+				timeScale = 0.58,
+			},
+			alphaOverLife = {
+				{ 0, 0 },
+				{ 0.3, 0.24 },
+				{ 1, 0 },
+			},
+			flicker = {
+				rateWeight = 0.04,
+				brightnessWeight = 0.04,
+			},
+		},
+		{
+			kind = "light",
+			name = "vent-soft-light",
+			color = Color3.fromRGB(80, 175, 255),
+			range = 9,
+			brightness = 1.25,
+			flicker = {
+				brightnessWeight = 0.45,
+				rangeWeight = 0.1,
+			},
+		},
+	},
+})
+
 manager:RegisterEvent("demo-spawn", function(activeManager, payload)
 	payload.priority = payload.priority or 1
 	return activeManager:Spawn(payload.id, payload)
@@ -128,6 +222,8 @@ local presets = {
 	{ id = "poison-cloud", label = "Poison Cloud", intensity = 1 },
 	{ id = "reward-burst", label = "Reward Burst", intensity = 1 },
 	{ id = "whirling-tornado", label = "Whirling Tornado", intensity = 1 },
+	{ id = "environment-candle-flame", label = "Candle Flame", intensity = 1 },
+	{ id = "environment-magic-vent", label = "Magic Vent", intensity = 1 },
 	{ id = "void-dissolve-impact", label = "Void Dissolve Impact", intensity = 1 },
 	{ id = "flipbook-shockwave", label = "Flipbook Shockwave", intensity = 1 },
 	{ id = "flipbook-dissolve-impact", label = "Flipbook Dissolve", intensity = 1 },
@@ -176,6 +272,10 @@ local demoGunMuzzle = nil
 local demoGunConnection = nil
 local demoGunRecoilUntil = 0
 local demoRangeModel = nil
+local demoCandleModel = nil
+local demoCandleEffect = nil
+local demoEnvironmentModel = nil
+local demoEnvironmentEffect = nil
 local reticleGui = nil
 local shootingMode = false
 local savedCameraMode = nil
@@ -349,6 +449,178 @@ local function placeImpactWall(force)
 	local base = demoRangeModel:FindFirstChild("RangeBase")
 	if base ~= nil and base:IsA("BasePart") then
 		base.CFrame = wallCFrame * CFrame.new(0, -6.7, -3.6)
+	end
+end
+
+local function ensureCandleFlameRig()
+	if demoCandleModel ~= nil and demoCandleModel.Parent ~= nil then
+		local candle = demoCandleModel:FindFirstChild("Candle")
+		if candle ~= nil then
+			local anchor = candle:FindFirstChild("FlameAnchor")
+			if anchor ~= nil and anchor:IsA("Attachment") then
+				return anchor
+			end
+		end
+	end
+
+	local base = characterCFrame()
+	local position = base.Position
+	local direction = horizontalDirection(base.LookVector)
+	local groundPosition = Vector3.new(position.X, groundYAt(position), position.Z)
+	local rigCFrame = CFrame.lookAt(groundPosition + direction * 4, groundPosition + direction * 5)
+
+	demoCandleModel = Instance.new("Model")
+	demoCandleModel.Name = "PlumeFXDemoEnvironmentalFlameRig"
+	demoCandleModel.Parent = workspace
+
+	local plinth = Instance.new("Part")
+	plinth.Name = "StonePlinth"
+	plinth.Anchored = true
+	plinth.CanCollide = true
+	plinth.CanTouch = false
+	plinth.CanQuery = false
+	plinth.CastShadow = true
+	plinth.Material = Enum.Material.Slate
+	plinth.Color = Color3.fromRGB(48, 50, 55)
+	plinth.Size = Vector3.new(1.1, 0.18, 1.1)
+	plinth.CFrame = rigCFrame * CFrame.new(0, 0.09, 0)
+	plinth.Parent = demoCandleModel
+
+	local candle = Instance.new("Part")
+	candle.Name = "Candle"
+	candle.Shape = Enum.PartType.Cylinder
+	candle.Anchored = true
+	candle.CanCollide = false
+	candle.CanTouch = false
+	candle.CanQuery = false
+	candle.CastShadow = true
+	candle.Material = Enum.Material.SmoothPlastic
+	candle.Color = Color3.fromRGB(231, 214, 176)
+	candle.Size = Vector3.new(0.36, 0.72, 0.36)
+	candle.CFrame = rigCFrame * CFrame.new(0, 0.54, 0)
+	candle.Parent = demoCandleModel
+	demoCandleModel.PrimaryPart = candle
+
+	local wick = Instance.new("Part")
+	wick.Name = "Wick"
+	wick.Anchored = true
+	wick.CanCollide = false
+	wick.CanTouch = false
+	wick.CanQuery = false
+	wick.CastShadow = false
+	wick.Material = Enum.Material.SmoothPlastic
+	wick.Color = Color3.fromRGB(21, 17, 14)
+	wick.Size = Vector3.new(0.035, 0.16, 0.035)
+	wick.CFrame = rigCFrame * CFrame.new(0, 0.94, 0)
+	wick.Parent = demoCandleModel
+
+	local anchor = Instance.new("Attachment")
+	anchor.Name = "FlameAnchor"
+	anchor.Position = Vector3.new(0, 0.43, 0)
+	anchor.Parent = candle
+
+	return anchor
+end
+
+local function spawnCandleFlame(preset)
+	local anchor = ensureCandleFlameRig()
+	if
+		demoCandleEffect ~= nil
+		and demoCandleEffect.Model ~= nil
+		and demoCandleEffect.Model.Parent ~= nil
+	then
+		demoCandleEffect:Destroy()
+		demoCandleEffect = nil
+	end
+
+	local effect, message =
+		Plume.Environment.attachFlame(manager, anchor, "environment-candle-flame", {
+			intensity = preset.intensity,
+			priority = 8,
+			name = "PlumeFXDemoCandleFlame",
+		})
+
+	if effect == nil then
+		warn("[PlumeFX Demo] Candle Flame failed:", message)
+	else
+		demoCandleEffect = effect
+	end
+end
+
+local function ensureEnvironmentVentRig()
+	if demoEnvironmentModel ~= nil and demoEnvironmentModel.Parent ~= nil then
+		local vent = demoEnvironmentModel:FindFirstChild("Vent")
+		if vent ~= nil then
+			local anchor = vent:FindFirstChild("EnvironmentAnchor")
+			if anchor ~= nil and anchor:IsA("Attachment") then
+				return anchor
+			end
+		end
+	end
+
+	local base = characterCFrame()
+	local position = base.Position
+	local direction = horizontalDirection(base.LookVector)
+	local right = direction:Cross(Vector3.new(0, 1, 0))
+	if right.Magnitude <= 1e-5 then
+		right = Vector3.new(1, 0, 0)
+	else
+		right = right.Unit
+	end
+	local groundPosition = Vector3.new(position.X, groundYAt(position), position.Z)
+	local center = groundPosition + direction * 4 + right * 2.2
+	local rigCFrame = CFrame.lookAt(center, center + direction)
+
+	demoEnvironmentModel = Instance.new("Model")
+	demoEnvironmentModel.Name = "PlumeFXDemoPersistentEnvironmentRig"
+	demoEnvironmentModel.Parent = workspace
+
+	local vent = Instance.new("Part")
+	vent.Name = "Vent"
+	vent.Shape = Enum.PartType.Cylinder
+	vent.Anchored = true
+	vent.CanCollide = true
+	vent.CanTouch = false
+	vent.CanQuery = false
+	vent.CastShadow = true
+	vent.Material = Enum.Material.Metal
+	vent.Color = Color3.fromRGB(42, 55, 68)
+	vent.Size = Vector3.new(0.22, 1.18, 1.18)
+	vent.CFrame = rigCFrame * CFrame.Angles(0, 0, math.rad(90)) * CFrame.new(0, 0, -0.11)
+	vent.Parent = demoEnvironmentModel
+	demoEnvironmentModel.PrimaryPart = vent
+
+	local anchor = Instance.new("Attachment")
+	anchor.Name = "EnvironmentAnchor"
+	anchor.Position = Vector3.new(0, 0, 0)
+	anchor.Parent = vent
+
+	return anchor
+end
+
+local function spawnMagicVent(preset)
+	local anchor = ensureEnvironmentVentRig()
+	if
+		demoEnvironmentEffect ~= nil
+		and demoEnvironmentEffect.Model ~= nil
+		and demoEnvironmentEffect.Model.Parent ~= nil
+	then
+		demoEnvironmentEffect:Destroy()
+		demoEnvironmentEffect = nil
+	end
+
+	local effect, message =
+		Plume.Environment.attachEffect(manager, anchor, "environment-magic-vent", {
+			intensity = preset.intensity,
+			priority = 8,
+			name = "PlumeFXDemoMagicVent",
+			flickerGroup = "magic-vent",
+		})
+
+	if effect == nil then
+		warn("[PlumeFX Demo] Magic Vent failed:", message)
+	else
+		demoEnvironmentEffect = effect
 	end
 end
 
@@ -835,6 +1107,16 @@ local function spawnPreset(index)
 
 	if preset.id == "shoot" then
 		spawnShoot(preset)
+		return
+	end
+
+	if preset.id == "environment-candle-flame" then
+		spawnCandleFlame(preset)
+		return
+	end
+
+	if preset.id == "environment-magic-vent" then
+		spawnMagicVent(preset)
 		return
 	end
 

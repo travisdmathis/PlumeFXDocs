@@ -15,6 +15,6 @@ To use it:
 3. Copy `examples/PlumeDemo` into `StarterPlayer > StarterPlayerScripts`.
 4. Press Play.
 
-The demo registers the included presets, shows a scrollable button panel, supports number-key shortcuts, and includes the first-person shooting test for muzzle flash, projectile travel, bullet impacts, decals, sparks, smoke, and mesh debris.
+The demo registers the included presets, shows a scrollable button panel, supports number-key shortcuts, includes Candle Flame and Magic Vent persistent environment buttons, and includes the first-person shooting test for muzzle flash, projectile travel, bullet impacts, decals, sparks, smoke, and mesh debris.
 
 `RaidBrigadeShowcase.luau` and the bundled `RaidBrigadeAssets.rbxm` file are only for the optional Meteor Impact and Ground Rupture showcase buttons. They are not part of the Creator Store library package, and you do not need them in production games.

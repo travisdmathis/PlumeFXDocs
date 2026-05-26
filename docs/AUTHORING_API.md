@@ -42,6 +42,8 @@ Supported renderer methods:
 - `:renderDecal()`
 - `:renderLight()`
 
+`renderSprite()` supports Roblox flipbook fields through `render.flipbook`, including `layout`, `mode`, `framerate`, `startRandom`, `blendFrames`, and `timeScale` when the engine exposes `ParticleEmitter.TimeScale`.
+
 `renderDecal()` is texture-first. By default it places the supplied texture on the target surface and does not add built-in scorch, ring, core, or crack artwork over it.
 
 ```lua
@@ -119,3 +121,29 @@ manager:Spawn("impact", {
 ```
 
 Emitter-level `:seed(...)` and spawn-level `seed` drive runtime randomization for mesh debris, decals, shape sampling, and other custom-rendered variations.
+
+## Persistent Environmental Effects
+
+Use `Plume.Environment` for persistent layered effects that live on existing `Attachment` or `BasePart` anchors:
+
+```lua
+Plume.Environment.registerEffect(manager, "magic-vent", {
+	flickerGroup = "magic-vent",
+	layers = {
+		{
+			texture = "rbxassetid://YOUR_FLIPBOOK_TEXTURE",
+			rate = 2.5,
+			lifetime = { min = 2.4, max = 3.2 },
+			size = { min = 0.7, max = 1.1 },
+			flipbook = { layout = "Grid4x4", mode = "Loop", timeScale = 0.8 },
+		},
+		{ kind = "light", range = 9, brightness = 1.4 },
+	},
+})
+
+local effect = Plume.Environment.attachEffect(manager, ventAttachment, "magic-vent", {
+	seed = ventAttachment:GetFullName(),
+})
+```
+
+The helper builds persistent sprite/flipbook and light layer stacks. It follows the anchor without repositioning it. Flame helpers are available for candle, torch, brazier, and lantern use cases. See `docs/ENVIRONMENTAL_EFFECTS.md` for layer overrides and custom flicker groups.

@@ -885,10 +885,7 @@ local function getUploadedMeteorTemplates(assetRoot)
 		end
 	end
 	if #templates == 0 then
-		warnOnce(
-			"emptyMeteorModels",
-			"MeteorModels exists but contains no usable model templates."
-		)
+		warnOnce("emptyMeteorModels", "MeteorModels exists but contains no usable model templates.")
 	else
 		warnOnce("usingMeteorModels", `Using {#templates} meteor model template(s).`)
 	end

@@ -1,5 +1,25 @@
 # Changelog
 
+## v0.3.0
+
+Persistent environmental VFX update for **PlumeFX VFX Toolkit & Effects Library**.
+
+### Added
+
+- Added `Plume.Environment.effect(config)` for generic layered persistent environmental VFX with configurable sprite/flipbook and light layers.
+- Added `Plume.Environment.registerEffect(manager, id, config)` and `Plume.Environment.attachEffect(manager, anchor, id, options)` for authoring anchored ambient loops on existing `Attachment` or `BasePart` anchors without repositioning the anchor.
+- Added `Plume.Environment.flame(config)`, `registerFlame(...)`, and `attachFlame(...)` as candle, torch, brazier, lantern, and magic-flame convenience helpers built on the same persistent environment system.
+- Added `Plume.Runtime.FlickerController` for smoothed seeded flicker that modulates tagged `ParticleEmitter` rates/brightness and light brightness/range with eased noise instead of frame-to-frame snapping.
+
+### Changed
+
+- `renderSprite()` now supports `timeScale` / `flipbook.timeScale` when the Roblox engine exposes `ParticleEmitter.TimeScale`.
+- Sprite and light renderers can now carry `render.flicker` metadata for reusable flicker groups.
+
+### Fixed
+
+- Fixed `partBeam` renderers erroring when an emitter had an init table but no explicit alpha value.
+
 ## v0.2.0
 
 Authoring and production toolkit update for **PlumeFX VFX Toolkit & Effects Library**.

@@ -1,18 +1,19 @@
 # PlumeFX Documentation
 
-Public documentation for **PlumeFX VFX Toolkit & Effects Library**, a Roblox-native VFX toolkit with a chainable Luau authoring API, runtime manager, validation, serialization, preload reports, seeded variation, event triggers, attachment/socket spawning, mesh debris, texture-first surface decals, optional procedural impact details, flipbook particles, beams, trails, lights, part beams, and polished starter effects.
+Public documentation for **PlumeFX VFX Toolkit & Effects Library**, a Roblox-native VFX toolkit with a chainable Luau authoring API, runtime manager, validation, serialization, preload reports, seeded variation, event triggers, attachment/socket spawning, mesh debris, texture-first surface decals, optional procedural impact details, flipbook particles, beams, trails, lights, part beams, anchored persistent environmental effects, and polished starter effects.
 
 Get PlumeFX on the Roblox Creator Store:
 
 https://create.roblox.com/store/asset/93706653529943/PlumeFX-VFX-Toolkit-Effects-Library
 
-Current documented package version: `0.2.0`.
+Current documented package version: `0.3.0`.
 
 ## Start Here
 
 - [Quick Start](docs/QUICK_START.md)
 - [Authoring API](docs/AUTHORING_API.md)
 - [Customizing Presets](docs/CUSTOMIZING_PRESETS.md)
+- [Persistent Environmental Effects](docs/ENVIRONMENTAL_EFFECTS.md)
 - [Preset Catalog](docs/PRESET_CATALOG.md)
 - [Events And Triggers](docs/EVENTS_AND_TRIGGERS.md)
 - [Flipbook Textures](docs/FLIPBOOK_TEXTURES.md)
@@ -58,6 +59,13 @@ manager:Spawn("impact-explosion", {
 	seed = 12345,
 })
 ```
+
+## New In v0.3.0
+
+- `Plume.Environment` helpers for persistent layered environment VFX attached to existing anchors.
+- Sprite/flipbook and light layer stacks for auras, vents, mist, sparks, candles, torches, lanterns, braziers, portals, and other ambient loops.
+- `Plume.Runtime.FlickerController` for smoothed seeded modulation across persistent particles and lights.
+- Sprite `timeScale` support for smoother looped flipbook particles.
 
 ## New In v0.2.0
 

@@ -54,3 +54,29 @@ manager:Spawn("bullet-impact", {
 - Use `Plume.Serialization.toJSON(effectDef)` and `fromJSON(json)` to save or share authored definitions.
 - Use spawn `seed` values for repeatable previews and support repros.
 - Use `spawnFromEvents(...)` to build event-driven effects that react to timeline, lifecycle, manual, or gameplay events.
+
+## Persistent Environmental Effect Starter
+
+For anchored scene loops such as vents, auras, sparks, candles, lanterns, dust motes, mist, and portal effects, register a reusable layered definition and attach it to an existing artist-placed anchor:
+
+```lua
+Plume.Environment.registerEffect(manager, "magic-vent", {
+	flickerGroup = "magic-vent",
+	layers = {
+		{
+			texture = "rbxassetid://YOUR_FLIPBOOK_TEXTURE",
+			rate = 2.5,
+			lifetime = { min = 2.4, max = 3.2 },
+			size = { min = 0.7, max = 1.1 },
+			flipbook = { layout = "Grid4x4", mode = "Loop", timeScale = 0.8 },
+		},
+		{ kind = "light", range = 9, brightness = 1.4 },
+	},
+})
+
+Plume.Environment.attachEffect(manager, ventAttachment, "magic-vent", {
+	seed = ventAttachment:GetFullName(),
+})
+```
+
+The environment helper preserves the anchor, follows it, and layers sprite/flipbook particles, lights, and smoothed flicker. `registerFlame()` is still available as a convenience shortcut for candle, torch, brazier, and lantern fire. See `docs/ENVIRONMENTAL_EFFECTS.md`.
